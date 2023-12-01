@@ -80,6 +80,7 @@ else()
     ${rime_plugins_deps})
 endif()
 
+
 if(BUILD_SHARED_LIBS)
   add_library(rime ${rime_src})
   target_link_libraries(rime ${rime_deps})
@@ -92,6 +93,29 @@ if(BUILD_SHARED_LIBS)
   if(XCODE_VERSION)
     set_target_properties(rime PROPERTIES INSTALL_NAME_DIR "@rpath")
   endif()
+
+  if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
+    set(RIME_BUNDLE_IDENTIFIER "")
+    set(RIME_BUNDLE_IDENTIFIER ${RIME_BUNDLE_IDENTIFIER})
+
+    if (DEFINED RIME_BUNDLE_IDENTIFIER)
+      message (STATUS "Using RIME_BUNDLE_IDENTIFIER: ${RIME_BUNDLE_IDENTIFIER}")
+      set_xcode_property (rime PRODUCT_BUNDLE_IDENTIFIER ${RIME_BUNDLE_IDENTIFIER} All)
+    else()
+      message (STATUS "No RIME_BUNDLE_IDENTIFIER - with -DRIME_BUNDLE_IDENTIFIER=<rime bundle identifier>")
+    endif()
+
+    if (NOT DEFINED DEVELOPMENT_TEAM)
+      message (STATUS "No DEVELOPMENT_TEAM specified - if code signing for running on an iOS devicde is required, pass a valid development team id with -DDEVELOPMENT_TEAM=<YOUR_APPLE_DEVELOPER_TEAM_ID>")
+      set(CODESIGN_EMBEDDED_FRAMEWORKS 0)
+    else()
+      message (STATUS "Using DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}")
+      set(CODESIGN_EMBEDDED_FRAMEWORKS 1)
+      set_xcode_property (rime DEVELOPMENT_TEAM ${DEVELOPMENT_TEAM} All)
+    endif()
+  endif()
+
+
   install(TARGETS rime DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
   if(MSVC)
     install(FILES $<TARGET_PDB_FILE:rime>
@@ -171,3 +195,4 @@ else()
     ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
   install(TARGETS rime-static DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 endif()
+
