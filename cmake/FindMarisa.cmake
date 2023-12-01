@@ -9,7 +9,13 @@ if (Marisa_STATIC)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
   endif (WIN32)
 endif (Marisa_STATIC)
-find_library(Marisa_LIBRARY NAMES marisa libmarisa)
+find_library(Marisa_LIBRARY
+             NAMES marisa libmarisa
+             HINTS ${PROJECT_SOURCE_DIR}
+             PATH_SUFFIXES "lib"
+             REQUIRED
+             NO_DEFAULT_PATH
+            )
 if(Marisa_INCLUDE_PATH AND Marisa_LIBRARY)
   set(Marisa_FOUND TRUE)
 endif(Marisa_INCLUDE_PATH AND Marisa_LIBRARY)
