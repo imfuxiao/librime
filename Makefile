@@ -59,6 +59,12 @@ deps:
 deps/%:
 	$(MAKE) -f deps.mk $(@:deps/%=%)
 
+xcode:
+	$(MAKE) -f xcode.mk
+
+xcode/%:
+	$(MAKE) -f xcode.mk $(@:xcode/%=%)
+
 clean:
 	rm -r $(build) || true
 
