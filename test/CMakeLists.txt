@@ -1,6 +1,23 @@
 aux_source_directory(. rime_test_src)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test)
 add_executable(rime_test ${rime_test_src})
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
+  set(RIME_TEST_BUNDLE_IDENTIFIER "")
+  set(RIME_TEST_BUNDLE_IDENTIFIER ${RIME_TEST_BUNDLE_IDENTIFIER})
+
+  if (DEFINED RIME_TEST_BUNDLE_IDENTIFIER)
+    message (STATUS "Using RIME_TEST_BUNDLE_IDENTIFIER: ${RIME_TEST_BUNDLE_IDENTIFIER}")
+    set_xcode_property (rime_test PRODUCT_BUNDLE_IDENTIFIER ${RIME_TEST_BUNDLE_IDENTIFIER} All)
+  else()
+    message (STATUS "No RIME_TEST_BUNDLE_IDENTIFIER - with -DRIME_TEST_BUNDLE_IDENTIFIER=<rime_test bundle identifier>")
+  endif()
+
+  if (DEFINED DEVELOPMENT_TEAM)
+    set_xcode_property (rime_test DEVELOPMENT_TEAM ${DEVELOPMENT_TEAM} All)
+  endif()
+endif()
+
 target_link_libraries(rime_test
   ${rime_library}
   ${rime_dict_library}
