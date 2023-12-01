@@ -12,5 +12,6 @@ env.bat
 node_modules/
 *~
 .*.swp
-.cache/
-*.7z
+.DS_Store
+ios
+*.tar.bz2
