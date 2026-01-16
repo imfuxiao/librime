@@ -574,17 +574,25 @@ bool Table::Query(const SyllableGraph& syll_graph,
   if (!result || !index_ || start_pos >= syll_graph.interpreted_length)
     return false;
   result->clear();
+
   std::queue<pair<size_t, TableQuery>> q;
-  TableQuery initial_state(index_);
-  q.push({start_pos, initial_state});
+  q.push({start_pos, TableQuery(index_)});
+
+  const size_t interpreted_length = syll_graph.interpreted_length;
+  const auto& indices = syll_graph.indices;
+
   while (!q.empty()) {
-    size_t current_pos = q.front().first;
-    TableQuery query(q.front().second);
+    auto current = std::move(q.front());
     q.pop();
-    auto index = syll_graph.indices.find(current_pos);
-    if (index == syll_graph.indices.end()) {
+
+    size_t current_pos = current.first;
+    TableQuery& query = current.second;
+
+    auto index = indices.find(current_pos);
+    if (index == indices.end()) {
       continue;
     }
+
     if (query.level() == Code::kIndexCodeMaxLength) {
       TableAccessor accessor(query.Access(-1));
       if (!accessor.exhausted()) {
@@ -592,32 +600,38 @@ bool Table::Query(const SyllableGraph& syll_graph,
       }
       continue;
     }
+
     for (const auto& spellings : index->second) {
       SyllableId syll_id = spellings.first;
-      for (auto props : spellings.second) {
+
+      for (auto& props : spellings.second) {
         size_t end_pos = props->end_pos;
 
-        double penalty = 0.0;
-        if (false) {
-          size_t last_pos = query.last_pos();
-          if (props->ambiguous_source_positions.count(last_pos)) {
-            penalty = kPenaltyForAmbiguousSyllable;
-            DLOG(INFO) << "conditional penalty applied: ambiguous path ["
-                       << last_pos << ", " << end_pos << ")";
-          }
-        }
-        double next_credibility = props->credibility + penalty;
+        // double penalty = 0.0;
+        // if (false) {
+        //   size_t last_pos = query.last_pos();
+        //   if (props->ambiguous_source_positions.count(last_pos)) {
+        //     penalty = kPenaltyForAmbiguousSyllable;
+        //     DLOG(INFO) << "conditional penalty applied: ambiguous path ["
+        //                << last_pos << ", " << end_pos << ")";
+        //   }
+        // }
+        // double next_credibility = props->credibility + penalty;
+        double next_credibility = props->credibility;
 
         // 全碼匹配長度積分
         bool is_normal_spelling = props->type == kNormalSpelling;
         double delta_quality_len =
             (is_normal_spelling ? 1.0 : 0.0) * (end_pos - current_pos);
+
         TableAccessor accessor =
             query.Access(syll_id, next_credibility, delta_quality_len);
+
         if (!accessor.exhausted()) {
-          (*result)[end_pos].push_back(accessor);
+          (*result)[end_pos].push_back(std::move(accessor));
         }
-        if (end_pos < syll_graph.interpreted_length &&
+
+        if (end_pos < interpreted_length &&
             query.Advance(syll_id, next_credibility, delta_quality_len,
                           current_pos)) {
           q.push({end_pos, query});
