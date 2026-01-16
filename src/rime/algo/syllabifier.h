@@ -27,7 +27,7 @@ struct EdgeProperties : SpellingProperties {
   set<size_t> ambiguous_source_positions;
 };
 
-using SpellingMap = map<SyllableId, EdgeProperties>;
+using SpellingMap = hash_map<SyllableId, EdgeProperties>;
 using VertexMap = map<size_t, SpellingType>;
 using EndVertexMap = map<size_t, SpellingMap>;
 using EdgeMap = map<size_t, EndVertexMap>;
