@@ -513,6 +513,7 @@ bool UserDictionary::TranslateCodeToString(const Code& code, string* result) {
   if (!table_ || !result)
     return false;
   result->clear();
+  result->reserve(code.size() * 5);
   for (const SyllableId& syllable_id : code) {
     string spelling = rev_syllabary_.count(syllable_id)
                           ? rev_syllabary_[syllable_id]
@@ -523,8 +524,8 @@ bool UserDictionary::TranslateCodeToString(const Code& code, string* result) {
       result->clear();
       return false;
     }
-    *result += spelling;
-    *result += ' ';
+    result->append(spelling);
+    result->push_back(' ');
   }
   return true;
 }
